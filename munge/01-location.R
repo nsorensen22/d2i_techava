@@ -32,6 +32,7 @@ for (i in nrow(tmp)){
 }
 hist(tmp$length)
 hist(tmp$length_new)
+tmp$Return_Data_new <- as.Date(tmp$Departure_Date)+tmp$length_new
 
 rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
 

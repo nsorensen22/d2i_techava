@@ -7,7 +7,7 @@ region <- rio::import("./data/Techava Data For Analysis.xlsx", which = "Regions"
 
 
 
-#version 1 - staff travelling from location other than office
+#version 01 - staff travelling from location other than office
 names(c(flights_c, employee))
 tmp <- flights_c %>% dplyr::rename("EID" = "EmployeeID") %>%  dplyr::left_join(employee) %>%
   dplyr::mutate(location_country = ifelse(Location=="New York", "USA", 
@@ -18,7 +18,7 @@ rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")
 
 
 
-#version 2 - extending length of transcontinental trip
+#version 02 - extending length of transcontinental trip
 tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") %>%
   dplyr::left_join(region, by = c("location_country"="Country")) %>% dplyr::rename("Origin_region" = "Region") %>%
   dplyr::left_join(region, by = c("Destination_Country"="Country")) %>% dplyr::rename("Destination_region" = "Region") %>%
@@ -28,7 +28,6 @@ for (i in nrow(tmp)){
   tmp$length_new <- ifelse(tmp$intraregion==1,
          ifelse(tmp$length<3, tmp$`length`+2, tmp$`length`*1),
          tmp$length*1)
-  
 }
 hist(tmp$length)
 hist(tmp$length_new)
@@ -38,23 +37,71 @@ rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
 
 
 
-#tmp$new_return_date <- ifelse(tmp$)
+#version 03 - no NY/Christmas flying
+tmp <- rio::import("./data/version_02.xlsx", which = "Flights_C") 
+#tmp$`Booking Date` <- lubridate::round_date(tmp$`Booking Date`, "day") #makes no difference in excel?
 
-#rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
+tmp <- tmp %>% dplyr::mutate(holiday = ifelse(c(tmp$Departure_Date > "2017-12-25" & tmp$Departure_Date <= "2018-01-02" |
+                             tmp$Departure_Date > "2018-12-25" & tmp$Departure_Date <= "2019-01-02" |
+                             tmp$Departure_Date > "2019-12-25" & tmp$Departure_Date <= "2020-01-02"), T, F))
+x <- plyr::daply(tmp, .(tmp$holiday), funtion(x)return(x))  
+
+x <- daply(df, .(splitting_variable), function(x)return(x))
+
+split(tmp, tmp$holiday)
 
 
+t <- split(tmp, )
 
-#version 3 - employees flying more than one flight per day
-for (i in unique(tmp$EID)) {
-  sum(ifelse(tmp$Departure_Date==tmp$Departure_Date, T, F))
-  #tmp %>% count(Departure_Date, Return_Date)
+k <- tmp %>% dplyr::filter(
 
-}
+  
+  
+  
+  
+split
 
+split()
 
-#version 3 - no NY/Christmas flying
+between
+
+rio::export(tmp, "./data/version_03.xlsx", which = "Flights_C")
+  
+  
+
 tmp$Departure_Date > 2019
 
 test <- tmp %>% dplyr::filter(tmp$Departure_Date)
 
 filter(FB, date >= as.Date("2013-01-01"), date <= as.Date("2013-12-31"))
+
+
+
+
+
+
+
+#version 04 - employees flying more than one flight per day
+
+
+for (i in unique(tmp$EID)) {
+  k <- tmp %>% dplyr::filter(EID==7)
+  ifelse(nrow(k)>1, 
+         match(k$Departure_Date, k$Return_Data_new, nomatch = 0))
+         
+         
+         
+         
+         ,
+                print(k$EID)), print("No"))
+  
+  
+  
+  
+
+    sum(ifelse(tmp$Departure_Date %in% tmp$Departure_Date, T, F))
+  #tmp %>% count(Departure_Date, Return_Date)
+
+}
+
+

@@ -23,9 +23,18 @@ tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") %>%
   dplyr::left_join(region, by = c("location_country"="Country")) %>% dplyr::rename("Origin_region" = "Region") %>%
   dplyr::left_join(region, by = c("Destination_Country"="Country")) %>% dplyr::rename("Destination_region" = "Region") %>%
   dplyr::mutate(intraregion = ifelse(Destination_region==Origin_region, 1, 0))
-
 tmp$length <- as.numeric(tmp$Return_Date-tmp$Departure_Date)
+for (i in nrow(tmp)){
+  tmp$length_new <- ifelse(tmp$intraregion==1,
+         ifelse(tmp$length<3, tmp$`length`+2, tmp$`length`*1),
+         tmp$length*1)
+  
+}
 hist(tmp$length)
+hist(tmp$length_new)
+
+rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
+
 
 
 #tmp$new_return_date <- ifelse(tmp$)

@@ -17,16 +17,24 @@ tmp <- flights_c %>% dplyr::rename("EID" = "EmployeeID") %>%  dplyr::left_join(e
 rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")
 
 
-#version 2 - making length of stay longer
-tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C")
+
+#version 2 - extending length of transcontinental trip
+tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") %>%
+  dplyr::left_join(region, by = c("location_country"="Country")) %>% dplyr::rename("Origin_region" = "Region") %>%
+  dplyr::left_join(region, by = c("Destination_Country"="Country")) %>% dplyr::rename("Destination_region" = "Region") %>%
+  dplyr::mutate(intraregion = ifelse(Destination_region==Origin_region, 1, 0))
+
 tmp$length <- as.numeric(tmp$Return_Date-tmp$Departure_Date)
 hist(tmp$length)
-tmp$new_return_date <- ifelse(tmp$)
+
+
+#tmp$new_return_date <- ifelse(tmp$)
+
+#rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
+
 
 
 #version 3 - employees flying more than one flight per day
-
-
 for (i in unique(tmp$EID)) {
   sum(ifelse(tmp$Departure_Date==tmp$Departure_Date, T, F))
   #tmp %>% count(Departure_Date, Return_Date)

@@ -17,7 +17,10 @@ names(c(flights_c, employee))
 tmp <- flights_c %>% dplyr::rename("EID" = "EmployeeID") %>%  dplyr::left_join(employee) %>%
   dplyr::mutate(location_country = ifelse(Location=="New York", "USA", 
                                       ifelse(Location=="London", "England", "Singapore"))) %>%
-  dplyr::mutate(Origin_Country = location_country)
+  dplyr::mutate(Origin_Country = location_country) %>%
+  #NG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  #Need to update the airport to match this change!
+
 
 rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")
 
@@ -44,8 +47,6 @@ rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
 
 #version 03 - no NY/Christmas flying
 tmp <- rio::import("./data/version_02.xlsx", which = "Flights_C") 
-#tmp$`Booking Date` <- lubridate::round_date(tmp$`Booking Date`, "day") #makes no difference in excel?
-
 tmp <- tmp %>% dplyr::mutate(holiday = ifelse(c(tmp$Departure_Date > "2017-12-25" & tmp$Departure_Date <= "2018-01-02" |
                              tmp$Departure_Date > "2018-12-25" & tmp$Departure_Date <= "2019-01-02" |
                              tmp$Departure_Date > "2019-12-25" & tmp$Departure_Date <= "2020-01-02"), T, F))
@@ -62,17 +63,22 @@ tmp_dates$Return_Data_new <- tmp_dates$Departure_Date+tmp_dates$length_new
 #adding unusual dates dataframe to full frame
 tmp <- tmp %>% dplyr::filter(holiday==F) %>%
   rbind(tmp_dates)
+
 rio::export(tmp, "./data/version_03.xlsx", which = "Flights_C")
 
 
 
 
-
-
-#version 04 - employees flying more than one flight per day
-
-
+#version 04 - checking that employees only fly one flight per day
 for (i in unique(tmp$EID)) {
+  #check for each employee:
+    #only one departure date
+    #if travelling for more than 1 day, check that they are not also flying out to another trip, i.e. check that there is no Departure_Date == Return_Date
+  
+  
+  
+  
+  
   k <- tmp %>% dplyr::filter(EID==7)
   ifelse(nrow(k)>1, 
          match(k$Departure_Date, k$Return_Date_new, nomatch = 0))

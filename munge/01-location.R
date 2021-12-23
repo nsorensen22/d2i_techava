@@ -1,3 +1,8 @@
+#libraries
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+
 #Import dataset
 flights_c <- rio::import("./data/Techava Data For Analysis.xlsx", which = "Flights_C")
 employee <- rio::import("./data/Techava Data For Analysis.xlsx", which = "Employees")
@@ -31,7 +36,7 @@ for (i in nrow(tmp)){
 }
 hist(tmp$length)
 hist(tmp$length_new)
-tmp$Return_Data_new <- as.Date(tmp$Departure_Date)+tmp$length_new
+tmp$Return_Date_new <- as.Date(tmp$Departure_Date)+tmp$length_new
 
 rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
 
@@ -44,37 +49,20 @@ tmp <- rio::import("./data/version_02.xlsx", which = "Flights_C")
 tmp <- tmp %>% dplyr::mutate(holiday = ifelse(c(tmp$Departure_Date > "2017-12-25" & tmp$Departure_Date <= "2018-01-02" |
                              tmp$Departure_Date > "2018-12-25" & tmp$Departure_Date <= "2019-01-02" |
                              tmp$Departure_Date > "2019-12-25" & tmp$Departure_Date <= "2020-01-02"), T, F))
-x <- plyr::daply(tmp, .(tmp$holiday), funtion(x)return(x))  
+tmp_dates <- tmp %>% dplyr::filter(holiday==T) %>%
+  dplyr::mutate(year = lubridate::year(Departure_Date))
+tmp_dates$Departure_Date <- sample(seq(as.POSIXct('2017-01-03'), as.POSIXct('2017-12-25'), by = "sec"), 24)
+tmp_dates <- tmp_dates %>%  dplyr::mutate(fake_year = lubridate::year(Departure_Date),
+                                          month = lubridate::month(Departure_Date),
+                                          day = lubridate::day(Departure_Date))
 
-x <- daply(df, .(splitting_variable), function(x)return(x))
-
-split(tmp, tmp$holiday)
-
-
-t <- split(tmp, )
-
-k <- tmp %>% dplyr::filter(
-
-  
-  
-  
-  
-split
-
-split()
-
-between
-
+tmp_dates$Departure_Date <- lubridate::make_date(year = tmp_dates$year, month = tmp_dates$month, day = tmp_dates$day) 
+tmp_dates <- tmp_dates %>% dplyr::select(-c(fake_year,year,month,day))
+tmp_dates$Return_Data_new <- tmp_dates$Departure_Date+tmp_dates$length_new
+#adding unusual dates dataframe to full frame
+tmp <- tmp %>% dplyr::filter(holiday==F) %>%
+  rbind(tmp_dates)
 rio::export(tmp, "./data/version_03.xlsx", which = "Flights_C")
-  
-  
-
-tmp$Departure_Date > 2019
-
-test <- tmp %>% dplyr::filter(tmp$Departure_Date)
-
-filter(FB, date >= as.Date("2013-01-01"), date <= as.Date("2013-12-31"))
-
 
 
 
@@ -87,7 +75,7 @@ filter(FB, date >= as.Date("2013-01-01"), date <= as.Date("2013-12-31"))
 for (i in unique(tmp$EID)) {
   k <- tmp %>% dplyr::filter(EID==7)
   ifelse(nrow(k)>1, 
-         match(k$Departure_Date, k$Return_Data_new, nomatch = 0))
+         match(k$Departure_Date, k$Return_Date_new, nomatch = 0))
          
          
          

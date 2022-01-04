@@ -2,6 +2,8 @@
 library(dplyr)
 library(tidyverse)
 library(lubridate)
+library(xml2)
+
 
 #Import dataset
 flights_c <- rio::import("./data/Techava Data For Analysis.xlsx", which = "Flights_C")
@@ -17,9 +19,16 @@ names(c(flights_c, employee))
 tmp <- flights_c %>% dplyr::rename("EID" = "EmployeeID") %>%  dplyr::left_join(employee) %>%
   dplyr::mutate(location_country = ifelse(Location=="New York", "USA", 
                                       ifelse(Location=="London", "England", "Singapore"))) %>%
-  dplyr::mutate(Origin_Country = location_country) %>%
+  dplyr::mutate(Origin_Country = location_country) 
   #NG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   #Need to update the airport to match this change!
+airport_db = rio::import("./data/GlobalAirportDatabase.txt", sep = ":", header = F) %>%
+  dplyr::select("V2", "V4", "V5", "V15", "V16") #https://www.partow.net/miscellaneous/airportdatabase/index.html#Downloads
+tmp = tmp %>% dplyr::left_join(airport_db, by = c("Origin" = "V2")) %>%
+  dplyr::rename("o_lat" = "V15", "o_long" = "V16") %>%
+  dplyr::left_join(airport_db, by = c("Destination" = "V2")) %>%
+  dplyr::rename("d_lat" = "V15", "d_long" = "V16")
+
 
 
 rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")

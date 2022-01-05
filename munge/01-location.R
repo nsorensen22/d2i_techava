@@ -25,28 +25,16 @@ tmp <- flights_c %>% dplyr::rename("EID" = "EmployeeID") %>%  dplyr::left_join(e
                 Origin = ifelse(Origin_Country=="Singapore", "SIN",
                                 ifelse(Origin_Country=="England", c("LGW", "LHR"), c("JFK", "LGA"))),
                 #Ori_Dest = ifelse(Origin==Destination, 1, 0),
-                Destination = ifelse(Destination==Origin, "CTU", paste(Destination)))
-##have ppl flying from JFK to JFK
-
-
+                Destination = ifelse(Destination_Country==Origin_Country, "CTU", paste(Destination)),
+                Destination_Country = ifelse(Destination=="CTU", "China", paste(Destination_Country)))
 airport_db = read.table("./data/airports-extended.txt", sep = ",", header = F) %>% #https://openflights.org/data.html
   dplyr::select("V5", "V7", "V8")
 tmp = tmp %>% dplyr::left_join(airport_db, by = c("Origin" = "V5")) %>%
   dplyr::rename("o_lat" = "V7", "o_long" = "V8") %>%
   dplyr::left_join(airport_db, by = c("Destination" = "V5")) %>%
   dplyr::rename("d_lat" = "V7", "d_long" = "V8")
+tmp$Distance_Km <- distHaversine(tmp[, c(22,21)], tmp[, c(24,23)]) / 1000
 
-
-tmp$distance_new <- distHaversine(tmp[, c(22,21)], tmp[, c(24,23)]) / 1000
-tmp$dist_diff = round(tmp$Distance_Km-tmp$distance_new, 0)
-max(tmp$dist_diff)
-min(tmp$dist_diff)
-
-# for (i in nrow(tmp)) {
-#   tmp$air_dist = airport_distance(tmp$Origin, tmp$Destination)
-# }
-# 
-# tmp$test <- airport_distance(tmp$Origin, tmp$Destination)
 
 
 
@@ -55,25 +43,27 @@ min(tmp$dist_diff)
 rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")
 
 
+# 
+# #version 02 - extending length of transcontinental trip
+# tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") %>%
+#   dplyr::left_join(region, by = c("location_country"="Country")) %>% dplyr::rename("Origin_region" = "Region") %>%
+#   dplyr::left_join(region, by = c("Destination_Country"="Country")) %>% dplyr::rename("Destination_region" = "Region") %>%
+#   dplyr::mutate(intraregion = ifelse(Destination_region==Origin_region, 1, 0))
+# tmp$length <- as.numeric(tmp$Return_Date-tmp$Departure_Date)
+# for (i in nrow(tmp)){
+#   tmp$length_new <- ifelse(tmp$intraregion==1,
+#          ifelse(tmp$length<3, tmp$`length`+2, tmp$`length`*1),
+#          tmp$length*1)
+# }
+# hist(tmp$length)
+# hist(tmp$length_new)
+# tmp$Return_Date_new <- as.Date(tmp$Departure_Date)+tmp$length_new
+# 
+# rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
 
-#version 02 - extending length of transcontinental trip
-tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") %>%
-  dplyr::left_join(region, by = c("location_country"="Country")) %>% dplyr::rename("Origin_region" = "Region") %>%
-  dplyr::left_join(region, by = c("Destination_Country"="Country")) %>% dplyr::rename("Destination_region" = "Region") %>%
-  dplyr::mutate(intraregion = ifelse(Destination_region==Origin_region, 1, 0))
-tmp$length <- as.numeric(tmp$Return_Date-tmp$Departure_Date)
-for (i in nrow(tmp)){
-  tmp$length_new <- ifelse(tmp$intraregion==1,
-         ifelse(tmp$length<3, tmp$`length`+2, tmp$`length`*1),
-         tmp$length*1)
-}
-hist(tmp$length)
-hist(tmp$length_new)
-tmp$Return_Date_new <- as.Date(tmp$Departure_Date)+tmp$length_new
+#version 02 - time spent corresponding to distance
 
-rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
-
-
+###################################################################
 
 #version 03 - no NY/Christmas flying
 tmp <- rio::import("./data/version_02.xlsx", which = "Flights_C") 

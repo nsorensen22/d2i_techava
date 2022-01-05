@@ -60,13 +60,10 @@ rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")
 #version 02 - time spent corresponding to distance
 tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") 
 ggplot(tmp, aes(Distance_Km, Hours)) + geom_point()
+############ FIX MANUALLY
 
-x = length(tmp$Hours[tmp$Distance_Km<2000])
-tmp$Hours[tmp$Distance_Km<2000] <- round(runif(x,0.5,2.5), 5)
-y = length(tmp$Hours[tmp$Distance_Km>=2000])
-tmp$Hours[tmp$Distance_Km>=2000] <- tmp$Distance_Km/round(runif(y,880,926), 4)+0.5
   
-rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
+#rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
   
 
 

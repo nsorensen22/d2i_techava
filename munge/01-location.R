@@ -2,9 +2,10 @@
 library(dplyr)
 library(tidyverse)
 library(lubridate)
-library(airportr)
+#library(airportr)
 library(xml2)
 library(geosphere)
+library(ggplot2)
 
 
 #Import dataset
@@ -35,11 +36,6 @@ tmp = tmp %>% dplyr::left_join(airport_db, by = c("Origin" = "V5")) %>%
   dplyr::rename("d_lat" = "V7", "d_long" = "V8")
 tmp$Distance_Km <- distHaversine(tmp[, c(22,21)], tmp[, c(24,23)]) / 1000
 
-
-
-
-
-
 rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")
 
 
@@ -62,8 +58,23 @@ rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")
 # rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
 
 #version 02 - time spent corresponding to distance
+tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") 
+ggplot(tmp, aes(Distance_Km, Hours)) + geom_point()
+
+x = length(tmp$Hours[tmp$Distance_Km<2000])
+tmp$Hours[tmp$Distance_Km<2000] <- round(runif(x,0.5,2.5), 5)
+y = length(tmp$Hours[tmp$Distance_Km>=2000])
+tmp$Hours[tmp$Distance_Km>=2000] <- tmp$Distance_Km/round(runif(y,880,926), 4)+0.5
+  
+rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
+  
+
 
 ###################################################################
+
+
+#version 03 - total cost corresponding to distance
+
 
 #version 03 - no NY/Christmas flying
 tmp <- rio::import("./data/version_02.xlsx", which = "Flights_C") 

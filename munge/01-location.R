@@ -2,7 +2,9 @@
 library(dplyr)
 library(tidyverse)
 library(lubridate)
+library(airportr)
 library(xml2)
+library(geosphere)
 
 
 #Import dataset
@@ -19,15 +21,34 @@ names(c(flights_c, employee))
 tmp <- flights_c %>% dplyr::rename("EID" = "EmployeeID") %>%  dplyr::left_join(employee) %>%
   dplyr::mutate(location_country = ifelse(Location=="New York", "USA", 
                                       ifelse(Location=="London", "England", "Singapore"))) %>%
-  dplyr::mutate(Origin_Country = location_country) 
-  #NG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  #Need to update the airport to match this change!
-airport_db = rio::import("./data/GlobalAirportDatabase.txt", sep = ":", header = F) %>%
-  dplyr::select("V2", "V4", "V5", "V15", "V16") #https://www.partow.net/miscellaneous/airportdatabase/index.html#Downloads
-tmp = tmp %>% dplyr::left_join(airport_db, by = c("Origin" = "V2")) %>%
-  dplyr::rename("o_lat" = "V15", "o_long" = "V16") %>%
-  dplyr::left_join(airport_db, by = c("Destination" = "V2")) %>%
-  dplyr::rename("d_lat" = "V15", "d_long" = "V16")
+  dplyr::mutate(Origin_Country = location_country,
+                Origin = ifelse(Origin_Country=="Singapore", "SIN",
+                                ifelse(Origin_Country=="England", c("LGW", "LHR"), c("JFK", "LGA"))),
+                #Ori_Dest = ifelse(Origin==Destination, 1, 0),
+                Destination = ifelse(Destination==Origin, "CTU", paste(Destination)))
+##have ppl flying from JFK to JFK
+
+
+airport_db = read.table("./data/airports-extended.txt", sep = ",", header = F) %>% #https://openflights.org/data.html
+  dplyr::select("V5", "V7", "V8")
+tmp = tmp %>% dplyr::left_join(airport_db, by = c("Origin" = "V5")) %>%
+  dplyr::rename("o_lat" = "V7", "o_long" = "V8") %>%
+  dplyr::left_join(airport_db, by = c("Destination" = "V5")) %>%
+  dplyr::rename("d_lat" = "V7", "d_long" = "V8")
+
+
+tmp$distance_new <- distHaversine(tmp[, c(22,21)], tmp[, c(24,23)]) / 1000
+tmp$dist_diff = round(tmp$Distance_Km-tmp$distance_new, 0)
+max(tmp$dist_diff)
+min(tmp$dist_diff)
+
+# for (i in nrow(tmp)) {
+#   tmp$air_dist = airport_distance(tmp$Origin, tmp$Destination)
+# }
+# 
+# tmp$test <- airport_distance(tmp$Origin, tmp$Destination)
+
+
 
 
 
@@ -107,4 +128,5 @@ for (i in unique(tmp$EID)) {
 
 }
 
+#### MAKE FLIGHT DATES MORE RECENT?
 

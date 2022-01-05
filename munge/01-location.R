@@ -39,38 +39,34 @@ tmp$Distance_Km <- distHaversine(tmp[, c(22,21)], tmp[, c(24,23)]) / 1000
 rio::export(tmp, "./data/version_01.xlsx", which = "Flights_C")
 
 
-# 
-# #version 02 - extending length of transcontinental trip
-# tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") %>%
-#   dplyr::left_join(region, by = c("location_country"="Country")) %>% dplyr::rename("Origin_region" = "Region") %>%
-#   dplyr::left_join(region, by = c("Destination_Country"="Country")) %>% dplyr::rename("Destination_region" = "Region") %>%
-#   dplyr::mutate(intraregion = ifelse(Destination_region==Origin_region, 1, 0))
-# tmp$length <- as.numeric(tmp$Return_Date-tmp$Departure_Date)
-# for (i in nrow(tmp)){
-#   tmp$length_new <- ifelse(tmp$intraregion==1,
-#          ifelse(tmp$length<3, tmp$`length`+2, tmp$`length`*1),
-#          tmp$length*1)
-# }
-# hist(tmp$length)
-# hist(tmp$length_new)
-# tmp$Return_Date_new <- as.Date(tmp$Departure_Date)+tmp$length_new
-# 
-# rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
+
+
+#version 02 - extending length of transcontinental trip
+tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") %>%
+  dplyr::left_join(region, by = c("location_country"="Country")) %>% dplyr::rename("Origin_region" = "Region") %>%
+  dplyr::left_join(region, by = c("Destination_Country"="Country")) %>% dplyr::rename("Destination_region" = "Region") %>%
+  dplyr::mutate(intraregion = ifelse(Destination_region==Origin_region, 1, 0))
+tmp$length <- as.numeric(tmp$Return_Date-tmp$Departure_Date)
+for (i in nrow(tmp)){
+  tmp$length_new <- ifelse(tmp$intraregion==1,
+         ifelse(tmp$length<3, tmp$`length`+2, tmp$`length`*1),
+         tmp$length*1)
+}
+hist(tmp$length)
+hist(tmp$length_new)
+tmp$Return_Date_new <- as.Date(tmp$Departure_Date)+tmp$length_new
+
+rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
+
+
+
 
 #version 02 - time spent corresponding to distance
-tmp <- rio::import("./data/version_01.xlsx", which = "Flights_C") 
+tmp <- rio::import("./data/version_02.xlsx", which = "Flights_C") 
 ggplot(tmp, aes(Distance_Km, Hours)) + geom_point()
 ############ FIX MANUALLY
 
-  
-#rio::export(tmp, "./data/version_02.xlsx", which = "Flights_C")
-  
 
-
-###################################################################
-
-
-#version 03 - total cost corresponding to distance
 
 
 #version 03 - no NY/Christmas flying
@@ -87,7 +83,8 @@ tmp_dates <- tmp_dates %>%  dplyr::mutate(fake_year = lubridate::year(Departure_
 
 tmp_dates$Departure_Date <- lubridate::make_date(year = tmp_dates$year, month = tmp_dates$month, day = tmp_dates$day) 
 tmp_dates <- tmp_dates %>% dplyr::select(-c(fake_year,year,month,day))
-tmp_dates$Return_Data_new <- tmp_dates$Departure_Date+tmp_dates$length_new
+tmp_dates$Return_Date <- tmp_dates$Departure_Date+tmp_dates$length_new
+
 #adding unusual dates dataframe to full frame
 tmp <- tmp %>% dplyr::filter(holiday==F) %>%
   rbind(tmp_dates)

@@ -98,15 +98,15 @@ rio::export(tmp, "./data/version_03.xlsx", which = "Flights_C")
 tmp <- rio::import("./data/version_03.xlsx", which = "Flights_C") 
 
 df <- data.frame()
-i = 60
 for (i in unique(tmp$EID)) {
-  tmp <- tmp %>% dplyr::filter(EID==i)
-  tmp$test = ifelse(duplicated(tmp[,c(10,30)]), 1, 0)
-  tmp <- tmp %>% dplyr::filter(test==1)
-  df <- rbind(df, tmp)
+  tmp2 <- tmp %>% dplyr::filter(EID==i)
+  tmp2$test = ifelse(duplicated(tmp2[,c(4,30)]), 1, 0)
+  tmp2 <- tmp2 %>% dplyr::filter(test==1)
+  df <- rbind(df, tmp2)
 }
          
-        
-
+view(df)
+tmp <- tmp %>% dplyr::select(-Return_Date, -intraregion, -length, -holiday)
+rio::export(tmp, "./data/version_04.xlsx", which = "Flights_C")
 #### MAKE FLIGHT DATES MORE RECENT?
 

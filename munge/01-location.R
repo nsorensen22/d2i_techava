@@ -83,7 +83,7 @@ tmp_dates <- tmp_dates %>%  dplyr::mutate(fake_year = lubridate::year(Departure_
 
 tmp_dates$Departure_Date <- lubridate::make_date(year = tmp_dates$year, month = tmp_dates$month, day = tmp_dates$day) 
 tmp_dates <- tmp_dates %>% dplyr::select(-c(fake_year,year,month,day))
-tmp_dates$Return_Date <- tmp_dates$Departure_Date+tmp_dates$length_new
+tmp_dates$Return_Date_New <- tmp_dates$Departure_Date+tmp_dates$length_new
 
 #adding unusual dates dataframe to full frame
 tmp <- tmp %>% dplyr::filter(holiday==F) %>%
@@ -95,33 +95,18 @@ rio::export(tmp, "./data/version_03.xlsx", which = "Flights_C")
 
 
 #version 04 - checking that employees only fly one flight per day
+tmp <- rio::import("./data/version_03.xlsx", which = "Flights_C") 
+
+df <- data.frame()
+i = 60
 for (i in unique(tmp$EID)) {
-  #check for each employee:
-    #only one departure date
-    #if travelling for more than 1 day, check that they are not also flying out to another trip, i.e. check that there is no Departure_Date == Return_Date
-  
-  
-  
-  
-  
-  k <- tmp %>% dplyr::filter(EID==7)
-  ifelse(nrow(k)>1, 
-         match(k$Departure_Date, k$Return_Date_new, nomatch = 0))
-         
-         
-         
-         
-         ,
-                print(k$EID)), print("No"))
-  
-  
-  
-  
-
-    sum(ifelse(tmp$Departure_Date %in% tmp$Departure_Date, T, F))
-  #tmp %>% count(Departure_Date, Return_Date)
-
+  tmp <- tmp %>% dplyr::filter(EID==i)
+  tmp$test = ifelse(duplicated(tmp[,c(10,30)]), 1, 0)
+  tmp <- tmp %>% dplyr::filter(test==1)
+  df <- rbind(df, tmp)
 }
+         
+        
 
 #### MAKE FLIGHT DATES MORE RECENT?
 

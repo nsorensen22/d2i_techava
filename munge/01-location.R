@@ -116,8 +116,8 @@ rio::export(tmp, "./data/version_04.xlsx", which = "Flights_C")
 #version 05 - Total cost fix
 tmp <- rio::import("./data/Techava Data For Analysis.xlsx", which = "Flights_C")
 x <- nrow(tmp %>% dplyr::filter(`Travel Class` == "Business"))
-buss_cost <- tmp[1:x,]
-eco_cost <- tmp[-(1:x),]
+buss_cost <- tmp[1:x,9]
+eco_cost <- tmp[-(1:x),9]
 
 
 #y <- nrow(tmp %>% dplyr::filter(`Travel Class` == "Economy"))
@@ -126,7 +126,7 @@ eco_cost <- tmp[-(1:x),]
 
 
 tmp2 = rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C")
-tmp2 <- tmp2[order(tmp2$`Distance (Km)`),]
+#tmp2 <- tmp2[order(-tmp2$`Distance (Km)`),]
 tmp2_buss <- tmp2[1:x,] %>%
   dplyr::mutate(Total_Cost_New = buss_cost,
                 `Travel Class` = "Business")
@@ -135,31 +135,3 @@ tmp2_eco <- tmp2[-(1:x),] %>%
                 `Travel Class` = "Economy")
 tmp2 <- rbind(tmp2_buss,tmp2_eco)
 rio::export(tmp2, "./data/version_05.xlsx", which = "Flights_C")
-
-
-
- <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C")[1:nrow(tmp),] %>%
-  dplyr::mutate(Total_Cost_New = tmp$Total_Cost)
-eco <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C") %>%
-  dplyr::filter(`Travel Class` == "Economy") %>%
-  dplyr::mutate(Total_Cost_New = tmp$Total_Cost)
-
-
-
-
-
-
-
-
-buss <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C") %>%
-  dplyr::filter(`Travel Class` == "Business") %>%
-  dplyr::mutate(Total_Cost_New = tmp$Total_Cost)
-
-tmp <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C") %>%
-  dplyr::filter(`Travel Class` == "Economy") %>% select(Total_Cost)
-eco <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C") %>%
-  dplyr::filter(`Travel Class` == "Economy") %>%
-  dplyr::mutate(Total_Cost_New = tmp$Total_Cost)
-tmp <- rbind(buss, eco)
-
-

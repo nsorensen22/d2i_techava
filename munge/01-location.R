@@ -108,5 +108,22 @@ for (i in unique(tmp$EID)) {
 view(df)
 tmp <- tmp %>% dplyr::select(-Return_Date, -intraregion, -length, -holiday)
 rio::export(tmp, "./data/version_04.xlsx", which = "Flights_C")
-#### MAKE FLIGHT DATES MORE RECENT?
+
+
+
+###Manual manipulation of hours etc
+
+#version 05 - Total cost fix
+tmp <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C") %>%
+  dplyr::filter(`Travel Class` == "Business") %>% select(Total_Cost)
+buss <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C") %>%
+  dplyr::filter(`Travel Class` == "Business") %>%
+  dplyr::mutate(Total_Cost_New = tmp$Total_Cost)
+tmp <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C") %>%
+  dplyr::filter(`Travel Class` == "Economy") %>% select(Total_Cost)
+eco <- rio::import("./data/Techava Data For Analysis_New_v01.xlsx", which = "Flights_C") %>%
+  dplyr::filter(`Travel Class` == "Economy") %>%
+  dplyr::mutate(Total_Cost_New = tmp$Total_Cost)
+tmp <- rbind(buss, eco)
+rio::export(tmp, "./version_05.xlsx", which = "Flights_C")
 
